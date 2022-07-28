@@ -1,10 +1,10 @@
 package com.example.uas_pm
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.uas_pm.databinding.ActivityEditBinding
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -12,7 +12,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 class EditActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditBinding
-    private var myData:ResponsePost.ResponsePostItem? = null
+    private var myData: ResponsePost.ResponsePostItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,7 +22,7 @@ class EditActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         myData = intent.getParcelableExtra<ResponsePost.ResponsePostItem>("data")
-        if(intent.hasExtra("data")){
+        if (intent.hasExtra("data")) {
             myData?.apply {
                 binding.title.setText(title)
                 binding.des.setText(body)
@@ -48,7 +48,7 @@ class EditActivity : AppCompatActivity() {
                                 })
                         }
                         title != myData?.title -> {
-                            ApiModule.service.patchPost(hashMapOf("title" to title),id)
+                            ApiModule.service.patchPost(hashMapOf("title" to title), id)
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe({
@@ -63,7 +63,7 @@ class EditActivity : AppCompatActivity() {
                                 })
                         }
                         else -> {
-                            ApiModule.service.patchPost(hashMapOf("body" to des),id)
+                            ApiModule.service.patchPost(hashMapOf("body" to des), id)
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe({
@@ -78,9 +78,26 @@ class EditActivity : AppCompatActivity() {
                                 })
                         }
                     }
+
+                    val position = MainActivity.data.value?.indexOf(
+                        ResponsePost.ResponsePostItem(
+                            myData?.body ?: "",
+                            myData?.id ?: 0,
+                            myData?.title ?: "",
+                            myData?.userId ?: 0
+                        )
+                    )
+                    MainActivity.data.value?.set(
+                        position ?: 0, ResponsePost.ResponsePostItem(
+                            des,
+                            myData?.id ?: 0,
+                            title,
+                            myData?.userId ?: 0
+                        )
+                    )
                 }
             }
-        }else {
+        } else {
             supportActionBar?.title = "Add Post"
             binding.btnEdit.setOnClickListener {
                 val title = binding.title.text.toString()
@@ -96,6 +113,14 @@ class EditActivity : AppCompatActivity() {
                             "berhasil Add post",
                             Toast.LENGTH_SHORT
                         ).show()
+                        MainActivity.data.value?.add(
+                            ResponsePost.ResponsePostItem(
+                                des,
+                                1,
+                                title,
+                                myData?.userId ?: 0
+                            )
+                        )
                         finish()
                     }, {
                         Log.e("main", it.message.toString())
@@ -105,7 +130,7 @@ class EditActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             android.R.id.home -> {
                 finish()
             }
